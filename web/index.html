@@ -8,7 +8,7 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <style> html, body { margin: 0; background: #fff; } </style>
+  <style> html, body { margin: 0; background: #fff; } @keyframes spin { to { transform: rotate(360deg); } } </style>
 </head>
 <body>
   <div id="root"></div>
@@ -306,7 +306,110 @@ function CaptionCompareViewer() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<CaptionCompareViewer />);
+
+/* ===================== Try-it gallery (live AI captioning) ===================== */
+function GenButton({ onClick, loading, label }) {
+  return (
+    <button onClick={onClick} disabled={loading}
+      style={{ border: "none", cursor: loading ? "default" : "pointer", fontFamily: T.fontKo, fontSize: 14, fontWeight: 600, padding: "9px 14px", borderRadius: 10, color: "#fff", background: loading ? "#9aa4b2" : T.navy, display: "inline-flex", alignItems: "center", gap: 8 }}>
+      {loading ? <Spinner /> : <Ico.sparkles width="16" height="16" />}
+      {loading ? "생성 중…" : label}
+    </button>
+  );
+}
+function Spinner() {
+  return (<span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,.5)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block", animation: "spin .7s linear infinite" }} />);
+}
+function SceneCard({ entry, st, onGen }) {
+  const [thumbFailed, setThumbFailed] = useState(false);
+  const dur = (entry.clip_start != null && entry.clip_end != null) ? (entry.clip_end - entry.clip_start) : null;
+  const pseudo = { scene_id: entry.scene_id, video_url: entry.video_url, subtitle_url: null, keyframes: entry.thumbnail ? [entry.thumbnail] : [] };
+  const generated = st && st.refs;
+  return (
+    <div style={{ border: `1px solid ${T.line}`, borderRadius: 14, overflow: "hidden", background: "#fff", display: "flex", flexDirection: "column" }}>
+      {generated ? <SceneMedia entry={pseudo} showFull={false} />
+        : (<div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", background: "#1d2733" }}>
+            {entry.thumbnail && !thumbFailed ? <img src={entry.thumbnail} alt="" onError={() => setThumbFailed(true)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              : <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#5f6b7a" }}><Ico.photo /></div>}
+          </div>)}
+      <div style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, fontFamily: T.fontEn, fontSize: 12, color: T.sub }}>
+          <span style={{ background: "rgba(35,76,119,.08)", padding: "2px 8px", borderRadius: 6 }}>{entry.category || "?"}</span>
+          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{entry.channel || ""}</span>
+          {dur != null && <span style={{ marginLeft: "auto" }}>{dur.toFixed(0)}s · {entry.n_frames}프레임</span>}
+        </div>
+        {generated ? <AICard references={st.refs} />
+          : <div>
+              <GenButton onClick={() => onGen(entry.scene_id)} loading={st && st.loading} label="AI 캡션 생성" />
+              {st && st.error && <div style={{ marginTop: 8, fontFamily: T.fontKo, fontSize: 13, color: "#c0392b" }}>{st.error}</div>}
+            </div>}
+      </div>
+    </div>
+  );
+}
+function TryItGallery() {
+  const [items, setItems] = useState(null);
+  const [err, setErr] = useState(null);
+  const [byId, setById] = useState({});
+  useEffect(() => {
+    fetch("/api/catalog").then((r) => r.json())
+      .then((d) => setItems(Array.isArray(d) ? d : []))
+      .catch((e) => setErr(String(e.message || e)));
+  }, []);
+  const gen = (sid) => {
+    setById((m) => ({ ...m, [sid]: { ...(m[sid] || {}), loading: true, error: null } }));
+    fetch("/api/caption", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ scene_id: sid }) })
+      .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.error || ("HTTP " + r.status)); return j; })
+      .then((j) => setById((m) => ({ ...m, [sid]: { loading: false, refs: j.claude_references } })))
+      .catch((e) => setById((m) => ({ ...m, [sid]: { loading: false, error: String(e.message || e) } })));
+  };
+  if (err) return <div style={{ textAlign: "center", color: "#c0392b", padding: "40px 0", fontFamily: T.fontKo }}>카탈로그를 불러오지 못했습니다: {err}</div>;
+  if (!items) return <div style={{ textAlign: "center", color: T.sub, padding: "40px 0", fontFamily: T.fontKo }}>불러오는 중…</div>;
+  if (!items.length) return <div style={{ textAlign: "center", color: T.sub, padding: "40px 0", fontFamily: T.fontKo }}>아직 체험할 장면이 없습니다. (catalog.live.json 업로드 필요)</div>;
+  return (
+    <div>
+      <p style={{ textAlign: "center", fontFamily: T.fontKo, color: T.sub, fontSize: 14, margin: "0 0 20px" }}>
+        장면을 고르고 <b style={{ color: T.navy }}>AI 캡션 생성</b>을 눌러 시공간 흐름 캡션을 직접 만들어 보세요.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+        {items.map((e) => <SceneCard key={e.scene_id} entry={e} st={byId[e.scene_id]} onGen={gen} />)}
+      </div>
+    </div>
+  );
+}
+
+/* ===================== App shell with tabs ===================== */
+function App() {
+  useFonts();
+  const [tab, setTab] = useState("compare");
+  const TabBtn = ({ id, children }) => {
+    const on = tab === id;
+    return (
+      <button onClick={() => setTab(id)}
+        style={{ border: "none", cursor: "pointer", fontFamily: T.fontKo, fontSize: 15, fontWeight: 600, padding: "8px 18px", borderRadius: 999, color: on ? "#fff" : T.sub, background: on ? T.navy : "transparent" }}>
+        {children}
+      </button>
+    );
+  };
+  return (
+    <div style={{ fontFamily: T.fontKo, background: T.bg, maxWidth: 1080, margin: "0 auto", padding: "20px 24px 40px", boxSizing: "border-box" }}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 8 }}>
+        <div style={{ display: "flex", gap: 4, background: "#f4f5f7", borderRadius: 999, padding: 4 }}>
+          <TabBtn id="compare">사람 vs AI 비교</TabBtn>
+          <TabBtn id="try">AI 캡션 체험</TabBtn>
+        </div>
+      </div>
+      {tab === "compare" ? <CaptionCompareViewer /> : (
+        <div>
+          <div style={{ display: "flex", justifyContent: "center", margin: "8px 0 32px" }}><Logo height={44} /></div>
+          <TryItGallery />
+        </div>
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
   </script>
 
   <!-- Transform JSX with the classic runtime (React.createElement) and run it -->

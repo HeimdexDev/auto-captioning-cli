@@ -1,0 +1,116 @@
+[
+  {
+    "scene_id": "rX19Sba9jFw__scene_004",
+    "video_id": "rX19Sba9jFw",
+    "category": "beauty",
+    "channel": "씬님 SSIN",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/rX19Sba9jFw/rX19Sba9jFw__scene_004.mp4",
+    "clip_start": 0.0,
+    "clip_end": 12.0,
+    "thumbnail": "https://REPLACE-WITH-PRESIGNED.example/beauty/CHANNEL/rX19Sba9jFw/scene_004/frame_00.jpg",
+    "frames": [
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_004/00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_004/01.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_004/02.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_004/03.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_004/04.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_004/05.jpg"
+    ],
+    "n_frames": 6
+  },
+  {
+    "scene_id": "lNgOPcCTEzY__scene_003",
+    "video_id": "lNgOPcCTEzY",
+    "category": "vlog",
+    "channel": "핫이슈지",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/lNgOPcCTEzY/lNgOPcCTEzY__scene_003.mp4",
+    "clip_start": 0.0,
+    "clip_end": 12.0,
+    "thumbnail": "https://REPLACE-WITH-PRESIGNED.example/vlog/CHANNEL/lNgOPcCTEzY/scene_003/frame_00.jpg",
+    "frames": [
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/lNgOPcCTEzY/lNgOPcCTEzY__scene_003/00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/lNgOPcCTEzY/lNgOPcCTEzY__scene_003/01.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/lNgOPcCTEzY/lNgOPcCTEzY__scene_003/02.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/lNgOPcCTEzY/lNgOPcCTEzY__scene_003/03.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/lNgOPcCTEzY/lNgOPcCTEzY__scene_003/04.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/lNgOPcCTEzY/lNgOPcCTEzY__scene_003/05.jpg"
+    ],
+    "n_frames": 6
+  },
+  {
+    "scene_id": "VAme9JG_xA4__scene_007",
+    "video_id": "VAme9JG_xA4",
+    "category": "food",
+    "channel": "육식맨",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/VAme9JG_xA4/VAme9JG_xA4__scene_007.mp4",
+    "clip_start": 0.0,
+    "clip_end": 12.0,
+    "thumbnail": "https://REPLACE-WITH-PRESIGNED.example/food/CHANNEL/VAme9JG_xA4/scene_007/frame_00.jpg",
+    "frames": [
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/VAme9JG_xA4/VAme9JG_xA4__scene_007/00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/VAme9JG_xA4/VAme9JG_xA4__scene_007/01.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/VAme9JG_xA4/VAme9JG_xA4__scene_007/02.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/VAme9JG_xA4/VAme9JG_xA4__scene_007/03.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/VAme9JG_xA4/VAme9JG_xA4__scene_007/04.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/VAme9JG_xA4/VAme9JG_xA4__scene_007/05.jpg"
+    ],
+    "n_frames": 6
+  },
+  {
+    "scene_id": "JdRcM4fLwgE__scene_003",
+    "video_id": "JdRcM4fLwgE",
+    "category": "education",
+    "channel": "슈카월드",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/JdRcM4fLwgE/JdRcM4fLwgE__scene_003.mp4",
+    "clip_start": 0.0,
+    "clip_end": 12.0,
+    "thumbnail": "https://REPLACE-WITH-PRESIGNED.example/education/CHANNEL/JdRcM4fLwgE/scene_003/frame_00.jpg",
+    "frames": [
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/JdRcM4fLwgE/JdRcM4fLwgE__scene_003/00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/JdRcM4fLwgE/JdRcM4fLwgE__scene_003/01.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/JdRcM4fLwgE/JdRcM4fLwgE__scene_003/02.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/JdRcM4fLwgE/JdRcM4fLwgE__scene_003/03.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/JdRcM4fLwgE/JdRcM4fLwgE__scene_003/04.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/JdRcM4fLwgE/JdRcM4fLwgE__scene_003/05.jpg"
+    ],
+    "n_frames": 6
+  },
+  {
+    "scene_id": "TUP6ELu7Qpo__scene_006",
+    "video_id": "TUP6ELu7Qpo",
+    "category": "game",
+    "channel": "잠뜰TV",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/TUP6ELu7Qpo/TUP6ELu7Qpo__scene_006.mp4",
+    "clip_start": 0.0,
+    "clip_end": 12.0,
+    "thumbnail": "https://REPLACE-WITH-PRESIGNED.example/game/CHANNEL/TUP6ELu7Qpo/scene_006/frame_00.jpg",
+    "frames": [
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/TUP6ELu7Qpo/TUP6ELu7Qpo__scene_006/00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/TUP6ELu7Qpo/TUP6ELu7Qpo__scene_006/01.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/TUP6ELu7Qpo/TUP6ELu7Qpo__scene_006/02.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/TUP6ELu7Qpo/TUP6ELu7Qpo__scene_006/03.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/TUP6ELu7Qpo/TUP6ELu7Qpo__scene_006/04.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/TUP6ELu7Qpo/TUP6ELu7Qpo__scene_006/05.jpg"
+    ],
+    "n_frames": 6
+  },
+  {
+    "scene_id": "rX19Sba9jFw__scene_010",
+    "video_id": "rX19Sba9jFw",
+    "category": "beauty",
+    "channel": "씬님 SSIN",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/rX19Sba9jFw/rX19Sba9jFw__scene_010.mp4",
+    "clip_start": 0.0,
+    "clip_end": 12.0,
+    "thumbnail": "https://REPLACE-WITH-PRESIGNED.example/beauty/CHANNEL/rX19Sba9jFw/scene_010/frame_00.jpg",
+    "frames": [
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_010/00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_010/01.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_010/02.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_010/03.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_010/04.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/caption-frames/rX19Sba9jFw/rX19Sba9jFw__scene_010/05.jpg"
+    ],
+    "n_frames": 6
+  }
+]

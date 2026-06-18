@@ -1,15 +1,14 @@
 """Stage — ``extract-frames``: sample caption frames across each recovered clip.
 
 The dataset's 2–3 labeler keyframes sit at the clip ENDS and miss the middle of
-longer scenes (a 20s scene comes with 2 frames). ``make-clips`` already recovered
-each scene's bounds and uploaded a per-scene clip that spans the whole scene, so we
-sample N frames evenly ACROSS that clip, perceptual-hash dedup near-identical
-frames, and save them locally. The captioning step then uses these instead of the
-sparse dataset keyframes, so the captions reflect the WHOLE clip.
+longer scenes. make-clips already recovered each scene's bounds and uploaded a
+per-scene clip spanning the whole scene, so we sample N frames evenly ACROSS that
+clip, perceptual-hash dedup near-identical frames, and save them locally. The
+captioning step uses these instead of the sparse dataset keyframes.
 
 Frame budget is adaptive: ~1 frame per ``--secs-per-frame``, clamped to
-[``--min-frames``, ``--max-frames``]. We download the small per-scene clip (not the
-full source) with the ambient AWS identity.
+[``--min-frames``, ``--max-frames``]. With ``--upload`` each kept frame is also
+pushed to S3 (so the live web caption endpoint can fetch it via a presigned URL).
 
 Requires ffmpeg/ffprobe and ``boto3 imagehash Pillow``.
 """
@@ -48,10 +47,8 @@ def even_timestamps(duration: float, n: int) -> list[float]:
 
 def _ffprobe_duration(path: Path) -> float:
     out = subprocess.run(
-        [
-            "ffprobe", "-v", "error", "-show_entries", "format=duration",
-            "-of", "default=nw=1:nk=1", str(path),
-        ],
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration",
+         "-of", "default=nw=1:nk=1", str(path)],
         capture_output=True, text=True, check=True,
     )
     return float(out.stdout.strip())
@@ -66,8 +63,8 @@ def _extract_at(video: Path, t: float, out: Path) -> None:
 
 
 def _dedup_indices(frame_paths: list[Path], threshold: int = 8) -> list[int]:
-    """Keep the first frame, then any frame far enough (Hamming > threshold) from the
-    last kept one; always keep the final frame. Collapses static stretches."""
+    """Keep first, then frames far enough (Hamming > threshold) from the last kept
+    one; always keep the final frame. Collapses static stretches."""
     import imagehash
     from PIL import Image
 
@@ -93,12 +90,19 @@ def extract_frames(
     min_frames: int = 4,
     max_frames: int = 12,
     dedup_threshold: int = 8,
+    upload: bool = False,
+    prefix: str = "caption-frames",
 ) -> dict[str, dict]:
-    """Sample + dedup caption frames for every scene in ``clip_keys.json``."""
+    """Sample + dedup caption frames for every scene in ``clip_keys.json``.
+
+    With ``upload=True``, push each kept frame to
+    ``s3://<RAW_BUCKET>/<prefix>/<video_id>/<scene_id>/NN.jpg`` (ambient creds) and
+    record its ``frame_key`` so build-catalog can presign it.
+    """
     import boto3
 
     clips = json.loads(Path(clips_path).read_text(encoding="utf-8"))
-    s3 = boto3.client("s3")  # ambient identity (download only)
+    s3 = boto3.client("s3") if upload else None
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -106,17 +110,17 @@ def extract_frames(
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         for sid, info in clips.items():
+            video_id = sid.split("__")[0]
             clip_key = info["clip_key"]
             local = tmp / f"{sid}.mp4"
             _eprint(f"downloading clip {clip_key} ...")
-            s3.download_file(RAW_BUCKET, clip_key, str(local))
+            boto3.client("s3").download_file(RAW_BUCKET, clip_key, str(local))
             dur = _ffprobe_duration(local)
             n = frame_count_for_duration(dur, secs_per_frame, min_frames, max_frames)
             ts = even_timestamps(dur, n)
 
             raw: list[tuple[float, Path]] = []
             for i, t in enumerate(ts):
-                # clamp slightly inside to avoid an EOF black frame
                 tt = min(t, max(0.0, dur - 0.05))
                 p = tmp / f"{sid}_{i:02d}.jpg"
                 _extract_at(local, tt, p)
@@ -126,7 +130,6 @@ def extract_frames(
 
             scene_dir = out_dir / sid
             scene_dir.mkdir(parents=True, exist_ok=True)
-            # clear any stale frames from a previous run
             for old in scene_dir.glob("*.jpg"):
                 old.unlink()
             frames = []
@@ -134,7 +137,13 @@ def extract_frames(
                 t, src = raw[idx]
                 dst = scene_dir / f"{j:02d}.jpg"
                 dst.write_bytes(Path(src).read_bytes())
-                frames.append({"path": str(dst.resolve()), "t": round(t, 2)})
+                entry = {"path": str(dst.resolve()), "t": round(t, 2)}
+                if upload:
+                    frame_key = f"{prefix}/{video_id}/{sid}/{j:02d}.jpg"
+                    s3.upload_file(str(dst), RAW_BUCKET, frame_key,
+                                   ExtraArgs={"ContentType": "image/jpeg"})
+                    entry["frame_key"] = frame_key
+                frames.append(entry)
 
             result[sid] = {
                 "clip_key": clip_key,
@@ -143,7 +152,8 @@ def extract_frames(
                 "n_kept": len(frames),
                 "frames": frames,
             }
-            _eprint(f"  {sid}: {dur:.1f}s clip -> sampled {len(ts)}, kept {len(frames)} frames")
+            tag = " (uploaded)" if upload else ""
+            _eprint(f"  {sid}: {dur:.1f}s -> sampled {len(ts)}, kept {len(frames)}{tag}")
 
     frames_out = Path(frames_out)
     frames_out.parent.mkdir(parents=True, exist_ok=True)
@@ -155,7 +165,6 @@ def extract_frames(
 
 
 def load_frames_map(path: Path) -> dict[str, dict]:
-    """Load caption_frames.json (empty dict if missing)."""
     path = Path(path)
     if not path.exists():
         return {}

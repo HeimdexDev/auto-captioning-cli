@@ -128,7 +128,42 @@ host Secrets (Replit) and exported shell vars always win.
    on `$PORT` (default 5000). No pip install, no AWS credentials on the host --
    the browser loads media straight from the presigned URLs in the JSON.
 
+For the **live "try it" captioning gallery** (users click to generate captions):
+4. Set `ANTHROPIC_API_KEY` as a Replit **Secret** (stays server-side; never sent to
+   the browser). Replit installs `anthropic` from requirements.txt.
+5. Upload `data/catalog.live.json` (gitignored — presigned, built offline) into the
+   Repl's `data/` folder. The gallery then lists the curated scenes and the
+   `AI 캡션 생성` button calls `POST /api/caption`.
+
 ---
+
+## Try-it: live AI captioning gallery
+
+A second tab ("AI 캡션 체험") shows a curated, uncaptioned scene gallery; clicking
+`AI 캡션 생성` generates the 3 temporal references live via Anthropic.
+
+Build the catalog offline (needs the ambient AWS identity for S3 uploads):
+
+```bash
+python -m heimdex_ptp curate --n 25 --per-video 5      # -> data/catalog_scenes.json
+python -m heimdex_ptp make-clips   --comparison data/catalog_scenes.json \
+                                   --out data/clip_keys.catalog.json --fps 1.5
+python -m heimdex_ptp extract-frames --clips data/clip_keys.catalog.json \
+                                   --out data/caption_frames.catalog.json --upload
+python -m heimdex_ptp build-catalog --clips data/clip_keys.catalog.json \
+                                   --frames data/caption_frames.catalog.json \
+                                   --scene-list data/catalog_scenes.json   # -> data/catalog.live.json
+```
+
+`curate` auto-selects N scenes across the fewest, most category-diverse videos (to
+minimize source downloads). `extract-frames --upload` pushes the clip-spanning frames
+to S3 so the server can fetch them by presigned URL.
+
+**Endpoint + guardrails** (`POST /api/caption {scene_id}`): the key lives only on the
+server; results are **cached per scene_id** (a scene bills at most once, ever);
+requests are **rate-limited per IP** (token bucket) with a **global daily cap**; and
+frames-per-request + `max_tokens` are bounded. `anthropic` is lazy-imported, so static
+serving still needs zero installs and the gallery degrades gracefully without a key.
 
 ## Critical constraints / lessons
 

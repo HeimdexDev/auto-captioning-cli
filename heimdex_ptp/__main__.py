@@ -71,7 +71,28 @@ def cmd_extract_frames(args: argparse.Namespace) -> int:
         min_frames=args.min_frames,
         max_frames=args.max_frames,
         dedup_threshold=args.dedup_threshold,
+        upload=args.upload,
+        prefix=args.prefix,
     )
+    return 0
+
+
+def cmd_curate(args: argparse.Namespace) -> int:
+    from .curate import curate_to_file
+
+    ids = curate_to_file(args.keyframes, args.scenes, args.out, n=args.n,
+                         per_video=args.per_video)
+    print(f"curated {len(ids)} scene(s) -> {args.out}", file=sys.stderr)
+    for i in ids:
+        print(i)
+    return 0
+
+
+def cmd_build_catalog(args: argparse.Namespace) -> int:
+    from .catalog import build_catalog
+
+    build_catalog(args.scenes, args.clips, args.frames, scene_list=args.scene_list,
+                  out=args.out, expires=args.expires, env_dirs=[REPO_ROOT])
     return 0
 
 
@@ -174,6 +195,15 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--json", action="store_true", help="emit full JSON")
     sp.set_defaults(func=cmd_inspect)
 
+    # curate
+    sp = sub.add_parser("curate", help="auto-select a diverse scene subset (few videos)")
+    sp.add_argument("--keyframes", type=Path, default=DEFAULT_KEYFRAMES_DIR)
+    sp.add_argument("--scenes", type=Path, default=DEFAULT_SCENES_JSONL)
+    sp.add_argument("--out", type=Path, default=Path("data/catalog_scenes.json"))
+    sp.add_argument("--n", type=int, default=25)
+    sp.add_argument("--per-video", type=int, default=5)
+    sp.set_defaults(func=cmd_curate)
+
     # build-jobs
     sp = sub.add_parser("build-jobs", help="emit one captioning job per scene")
     sp.add_argument("--keyframes", type=Path, default=DEFAULT_KEYFRAMES_DIR)
@@ -223,6 +253,9 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--max-frames", type=int, default=12)
     sp.add_argument("--dedup-threshold", type=int, default=8,
                     help="phash Hamming distance below which adjacent frames are dropped")
+    sp.add_argument("--upload", action="store_true",
+                    help="upload kept frames to S3 (needed for the live web caption endpoint)")
+    sp.add_argument("--prefix", default="caption-frames", help="S3 key prefix for uploaded frames")
     sp.set_defaults(func=cmd_extract_frames)
 
     # make-clips
@@ -247,6 +280,16 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--expires", type=int, default=MAX_EXPIRES,
                     help=f"URL lifetime sec (max {MAX_EXPIRES})")
     sp.set_defaults(func=cmd_resolve_media)
+
+    # build-catalog
+    sp = sub.add_parser("build-catalog", help="presign an uncaptioned scene catalog (try-it gallery)")
+    sp.add_argument("--scenes", type=Path, default=DEFAULT_SCENES_JSONL)
+    sp.add_argument("--clips", type=Path, default=Path("data/clip_keys.json"))
+    sp.add_argument("--frames", type=Path, default=Path("data/caption_frames.json"))
+    sp.add_argument("--scene-list", type=Path, default=Path("data/catalog_scenes.json"))
+    sp.add_argument("--out", type=Path, default=Path("data/catalog.live.json"))
+    sp.add_argument("--expires", type=int, default=MAX_EXPIRES)
+    sp.set_defaults(func=cmd_build_catalog)
 
     # serve
     sp = sub.add_parser("serve", help="start the stdlib web viewer")

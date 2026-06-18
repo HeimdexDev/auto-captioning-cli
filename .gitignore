@@ -35,3 +35,8 @@ data/*.pilot.jsonl
 # Extracted caption frames (regenerable, large)
 data/caption_frames/
 data/caption_frames.json
+
+# Try-it catalog: presigned live data + runtime cache (regenerable)
+data/catalog.live.json
+data/*.catalog.json
+data/caption_cache.json
