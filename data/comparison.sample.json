@@ -1,0 +1,211 @@
+[
+  {
+    "scene_id": "Dz57B0QkaCU__scene_024",
+    "video_id": "Dz57B0QkaCU",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/Dz57B0QkaCU/Dz57B0QkaCU__scene_024.mp4",
+    "full_video_url": "https://REPLACE-WITH-PRESIGNED.example/raw/CATEGORY/CHANNEL/Dz57B0QkaCU.mp4",
+    "clip_start": 83.7,
+    "clip_end": 86.7,
+    "keyframes": [
+      "https://REPLACE-WITH-PRESIGNED.example/CATEGORY/CHANNEL/Dz57B0QkaCU/scene_024/frame_00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/CATEGORY/CHANNEL/Dz57B0QkaCU/scene_024/frame_01.jpg"
+    ],
+    "subtitle_url": null,
+    "human_caption": "여성이 걸어가는 모습을 아래에서 촬영했다",
+    "claude_references": [
+      {
+        "ref_id": "ref_a",
+        "caption": "검정 상의 여성이 한 손을 들어 올리다가 두 여성이 손을 맞대고, 이어서 남성이 아래에서 위를 올려다보는 장면으로 넘어간다",
+        "shot_type": "medium",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "몸무게 CHECK!",
+          "출근 전 상태 점검",
+          "마이크도 차고 있으니까"
+        ],
+        "mood": [
+          "energetic",
+          "casual"
+        ],
+        "notes": ""
+      },
+      {
+        "ref_id": "ref_b",
+        "caption": "실내 정면 구도에서 엘리베이터 안 두 인물 구도로, 이어서 아래에서 올려다보는 로우앵글 클로즈업으로 화면이 크게 바뀐다",
+        "shot_type": "medium",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "출근 전 상태 점검",
+          "옷을 따로 입고 있고"
+        ],
+        "mood": [
+          "casual"
+        ],
+        "notes": ""
+      },
+      {
+        "ref_id": "ref_c",
+        "caption": "여성의 동작 장면에서 엘리베이터 하이파이브 장면을 거쳐 남성의 로우앵글 얼굴 장면으로 전환되는 장면",
+        "shot_type": "medium",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "몸무게 CHECK!",
+          "출근 전 상태 점검",
+          "마이크도 차고 있으니까"
+        ],
+        "mood": [
+          "casual",
+          "energetic"
+        ],
+        "notes": "여러 컷이 전환되는 구간"
+      }
+    ],
+    "quality_notes": {
+      "human_strength": "",
+      "claude_strength": "",
+      "claude_failure_modes": []
+    }
+  },
+  {
+    "scene_id": "Dz57B0QkaCU__scene_025",
+    "video_id": "Dz57B0QkaCU",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/Dz57B0QkaCU/Dz57B0QkaCU__scene_025.mp4",
+    "full_video_url": "https://REPLACE-WITH-PRESIGNED.example/raw/CATEGORY/CHANNEL/Dz57B0QkaCU.mp4",
+    "clip_start": 2.7,
+    "clip_end": 22.7,
+    "keyframes": [
+      "https://REPLACE-WITH-PRESIGNED.example/CATEGORY/CHANNEL/Dz57B0QkaCU/scene_025/frame_00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/CATEGORY/CHANNEL/Dz57B0QkaCU/scene_025/frame_01.jpg"
+    ],
+    "subtitle_url": null,
+    "human_caption": "여성이 옷걸이 앞에 서있는 모습을 보여주고, 체중계 숫자를 보여준다",
+    "claude_references": [
+      {
+        "ref_id": "ref_a",
+        "caption": "여성이 정면을 보고 말하다가 옷걸이 앞에 서고, 이어서 체중계 숫자가 보인 뒤 끝에 다시 인물 얼굴이 등장한다",
+        "shot_type": "closeup",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "57kg",
+          "50kg",
+          "BAD MORNING"
+        ],
+        "mood": [
+          "casual"
+        ],
+        "notes": ""
+      },
+      {
+        "ref_id": "ref_b",
+        "caption": "인물 얼굴 클로즈업에서 전신 로우앵글, 체중계 디테일 샷을 거쳐 다시 얼굴 클로즈업으로 구도가 여러 번 전환된다",
+        "shot_type": "closeup",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "57kg",
+          "50kg",
+          "am 9시입니다"
+        ],
+        "mood": [
+          "casual"
+        ],
+        "notes": ""
+      },
+      {
+        "ref_id": "ref_c",
+        "caption": "인물 얼굴로 시작해 옷걸이와 체중계 화면을 거쳐 다시 얼굴 클로즈업으로 마무리되는 여러 컷의 장면",
+        "shot_type": "closeup",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "57kg",
+          "50kg",
+          "BAD MORNING"
+        ],
+        "mood": [
+          "casual",
+          "calm"
+        ],
+        "notes": ""
+      }
+    ],
+    "quality_notes": {
+      "human_strength": "",
+      "claude_strength": "",
+      "claude_failure_modes": []
+    }
+  },
+  {
+    "scene_id": "Dz57B0QkaCU__scene_026",
+    "video_id": "Dz57B0QkaCU",
+    "video_url": "https://REPLACE-WITH-PRESIGNED.example/clips/Dz57B0QkaCU/Dz57B0QkaCU__scene_026.mp4",
+    "full_video_url": "https://REPLACE-WITH-PRESIGNED.example/raw/CATEGORY/CHANNEL/Dz57B0QkaCU.mp4",
+    "clip_start": 68.2,
+    "clip_end": 87.5,
+    "keyframes": [
+      "https://REPLACE-WITH-PRESIGNED.example/CATEGORY/CHANNEL/Dz57B0QkaCU/scene_026/frame_00.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/CATEGORY/CHANNEL/Dz57B0QkaCU/scene_026/frame_01.jpg",
+      "https://REPLACE-WITH-PRESIGNED.example/CATEGORY/CHANNEL/Dz57B0QkaCU/scene_026/frame_02.jpg"
+    ],
+    "subtitle_url": null,
+    "human_caption": "침대를 보여주고 여성의 정면을 보며 말 하고 있다",
+    "claude_references": [
+      {
+        "ref_id": "ref_a",
+        "caption": "정돈된 침대를 비추다가 여성이 얼굴을 가까이 댄 뒤 검정 상의 차림으로 서서 말하고, 끝에 다른 인물 장면으로 넘어간다",
+        "shot_type": "medium",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "정리 기분 up +99점",
+          "옷 좀 갈아입고 마이크 좀",
+          "드러나는 옷으로"
+        ],
+        "mood": [
+          "casual"
+        ],
+        "notes": ""
+      },
+      {
+        "ref_id": "ref_b",
+        "caption": "침대 클로즈업에서 여성 얼굴 근접 샷으로 바뀌고 이어 전신 구도로 물러났다가, 끝에 두 인물의 영상과 다른 얼굴 샷으로 컷이 전환된다",
+        "shot_type": "medium",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "출근 전 상태 점검",
+          "마이크도 차고 있으니까"
+        ],
+        "mood": [
+          "casual"
+        ],
+        "notes": ""
+      },
+      {
+        "ref_id": "ref_c",
+        "caption": "정돈된 침대로 시작해 여성이 검정 상의로 서서 말하는 장면을 거쳐 다른 인물 영상으로 전환되며 마무리되는 장면",
+        "shot_type": "medium",
+        "motion_type": "scene_transition",
+        "temporal_change": "major",
+        "text_on_screen": [
+          "정리 기분 up +99점",
+          "또 나름 다이어트 영상이니까"
+        ],
+        "mood": [
+          "casual",
+          "energetic"
+        ],
+        "notes": ""
+      }
+    ],
+    "quality_notes": {
+      "human_strength": "",
+      "claude_strength": "",
+      "claude_failure_modes": []
+    }
+  }
+]

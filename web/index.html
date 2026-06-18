@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>캡셔닝 결과 비교 — 사람 vs AI</title>
+  <!-- React + Babel (CDN): no build step; JSX is transformed in the browser -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style> html, body { margin: 0; background: #fff; } </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Diagnostic overlay: surface any error on screen instead of a blank page -->
+  <script>
+    window.addEventListener("error", function (e) {
+      var msg = (e.error && e.error.stack) ? e.error.stack : (e.message || String(e));
+      document.getElementById("root").innerHTML =
+        '<pre style="color:#c00;white-space:pre-wrap;padding:24px;font:13px/1.5 monospace">⚠️ 에러 발생:\n\n' +
+        msg + '\n\n' + (e.filename || '') + (e.lineno ? (' : line ' + e.lineno) : '') + '</pre>';
+    });
+    window.addEventListener("load", function () {
+      if (typeof React === "undefined" || typeof ReactDOM === "undefined") {
+        document.getElementById("root").innerHTML =
+          '<pre style="color:#c00;padding:24px;font:13px/1.5 monospace">⚠️ React CDN을 불러오지 못했습니다 (unpkg.com 차단 가능성).</pre>';
+      } else if (typeof Babel === "undefined") {
+        document.getElementById("root").innerHTML =
+          '<pre style="color:#c00;padding:24px;font:13px/1.5 monospace">⚠️ Babel CDN을 불러오지 못했습니다 (unpkg.com 차단 가능성).</pre>';
+      }
+    });
+  </script>
+
+  <script type="text/plain" id="app-source">
+const { useEffect, useRef, useState } = React;
+
+/* =====================================================================
+ * Data contract (GET /api/comparison) — an array of scene entries:
+ *   { scene_id, video_id, video_url, full_video_url, clip_start, clip_end,
+ *     keyframes:[...], subtitle_url, human_caption,
+ *     claude_references:[ {ref_id, caption, shot_type, motion_type,
+ *       temporal_change, text_on_screen, mood, notes} ], quality_notes }
+ * Every field is nullable; the UI degrades gracefully.
+ * ===================================================================== */
+
+/* ===================== Design tokens ===================== */
+const T = {
+  navy: "#234C77", aiBg: "#eef3f9", humanBg: "#f4f5f7",
+  text: "#1f2733", sub: "#6b7686", line: "#e6e9ef", bg: "#ffffff",
+  fontKo: "'Pretendard', system-ui, sans-serif",
+  fontEn: "'Pretendard', system-ui, sans-serif",
+};
+
+/* ===================== Heimdex logo (inline SVG) ===================== */
+function Logo({ height = 48 }) {
+  return (
+    <svg height={height} viewBox="0 0 220 64" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
+      <path d="M33.5404 9.9985C33.6294 9.99872 33.6981 10.0773 33.6859 10.1655L31.7113 24.1479C31.6863 24.3251 32.0199 24.4146 32.099 24.2544C34.076 20.2257 38.2143 17.5161 42.9135 17.5161C47.8342 17.5166 51.6167 21.8712 50.9291 26.7436L47.099 53.8745C47.0888 53.947 47.0267 54.0014 46.9535 54.0014H27.4682C27.3789 54.0014 27.3102 53.9219 27.3227 53.8335L29.2963 39.852C29.3213 39.6748 28.9875 39.585 28.9086 39.7456C26.9318 43.7743 22.7944 46.4838 18.0951 46.4839C13.1743 46.4834 9.39165 42.129 10.0795 37.2563L13.9096 10.1245C13.92 10.0522 13.982 9.9985 14.0551 9.9985H33.5404ZM37.2348 26.0571L36.7416 29.56H40.7338L38.7084 43.9546H34.7162L34.2231 47.4575H41.7172L44.7299 26.0571H37.2348ZM19.2914 16.5434L16.2787 37.9438H19.3129V37.9448H25.6186V37.9438H23.7738L24.267 34.4419H20.2748L22.3002 20.0464H26.2934L26.7865 16.5434H19.2914Z" fill="#0A2240"/>
+      <path d="M68.7351 17.1406V28.7614C69.4464 28.0502 70.2719 27.4914 71.2117 27.085C72.1515 26.6785 73.1676 26.4753 74.2598 26.4753C75.7076 26.4753 77.0031 26.8055 78.1461 27.466C79.3145 28.1264 80.2289 29.0408 80.8894 30.2092C81.5498 31.3523 81.88 32.6477 81.88 34.0955V46.4784H76.5458V35.2386C76.5458 34.0701 76.1902 33.1176 75.479 32.381C74.7932 31.619 73.8788 31.238 72.7357 31.238C71.5927 31.238 70.6402 31.619 69.8782 32.381C69.1161 33.143 68.7351 34.0955 68.7351 35.2386V46.4784H63.401V17.1406H68.7351Z" fill="black"/>
+      <path d="M94.268 46.8594C92.2614 46.8594 90.4579 46.4149 88.8577 45.5258C87.2828 44.6368 86.0382 43.4176 85.1238 41.8681C84.2347 40.2933 83.7902 38.5279 83.7902 36.5721C83.7902 34.6924 84.2347 32.9906 85.1238 31.4666C86.0128 29.9171 87.2193 28.6979 88.7434 27.8089C90.2928 26.9198 92.0074 26.4753 93.887 26.4753C95.6904 26.4753 97.3288 26.9071 98.802 27.7708C100.301 28.609 101.469 29.7774 102.307 31.2761C103.171 32.7493 103.603 34.3876 103.603 36.1911C103.603 36.4959 103.565 36.8515 103.488 37.2579C103.412 37.6389 103.323 38.0453 103.222 38.4771H88.9339C89.2133 39.6964 89.8229 40.6362 90.7627 41.2966C91.7279 41.957 92.8964 42.2872 94.268 42.2872C96.3509 42.2872 97.9384 41.6522 99.0306 40.3822L102.269 43.4303C101.304 44.4971 100.123 45.3353 98.7258 45.9449C97.3542 46.5546 95.8683 46.8594 94.268 46.8594ZM93.887 30.8569C92.6424 30.8569 91.5755 31.1745 90.6865 31.8095C89.7975 32.4445 89.2133 33.3335 88.9339 34.4765H98.4591C97.9003 32.0635 96.3763 30.8569 93.887 30.8569Z" fill="black"/>
+      <path d="M108.362 23.8083C107.524 23.8083 106.838 23.5162 106.305 22.9319C105.772 22.3477 105.505 21.6238 105.505 20.7602C105.505 19.8966 105.772 19.1726 106.305 18.5884C106.838 18.0042 107.524 17.7121 108.362 17.7121C109.226 17.7121 109.95 18.0042 110.534 18.5884C111.118 19.1726 111.41 19.8966 111.41 20.7602C111.41 21.6238 111.118 22.3477 110.534 22.9319C109.95 23.5162 109.226 23.8083 108.362 23.8083ZM111.029 26.8563V46.4784H105.695V26.8563H111.029Z" fill="black"/>
+      <path d="M119.971 26.8563V28.5709C120.631 27.9105 121.444 27.4025 122.409 27.0469C123.4 26.6658 124.428 26.4753 125.495 26.4753C126.74 26.4753 127.87 26.7166 128.886 27.1993C129.902 27.6819 130.74 28.3931 131.401 29.3329C132.925 27.4279 135.02 26.4753 137.688 26.4753C139.161 26.4753 140.482 26.7801 141.65 27.3898C142.844 27.9994 143.784 28.8884 144.469 30.0568C145.155 31.1999 145.498 32.5461 145.498 34.0955V46.4784H140.164V34.8576C140.164 33.7399 139.796 32.8636 139.059 32.2286C138.348 31.5682 137.446 31.238 136.354 31.238C135.287 31.238 134.411 31.5682 133.725 32.2286C133.065 32.8636 132.734 33.7399 132.734 34.8576V46.4784H127.4V34.8576C127.4 33.7399 127.057 32.8636 126.372 32.2286C125.711 31.5682 124.847 31.238 123.781 31.238C122.688 31.238 121.774 31.5682 121.037 32.2286C120.326 32.8636 119.971 33.7399 119.971 34.8576V46.4784H114.636V26.8563H119.971Z" fill="black"/>
+      <path d="M156.941 46.8594C155.189 46.8594 153.588 46.4022 152.14 45.4877C150.693 44.5733 149.537 43.3287 148.673 41.7538C147.835 40.179 147.416 38.4517 147.416 36.5721C147.416 34.6924 147.835 32.9906 148.673 31.4666C149.511 29.9171 150.654 28.6979 152.102 27.8089C153.576 26.9198 155.189 26.4753 156.941 26.4753C159.024 26.4753 160.866 27.1739 162.466 28.5709V17.1406H167.609V46.4784H162.466V44.5733C161.755 45.2845 160.929 45.8433 159.989 46.2497C159.049 46.6562 158.033 46.8594 156.941 46.8594ZM157.703 41.9062C159.126 41.9062 160.307 41.3982 161.247 40.3822C162.186 39.3662 162.656 38.0961 162.656 36.5721C162.656 35.0481 162.186 33.8161 161.247 32.8763C160.332 31.9111 159.151 31.4285 157.703 31.4285C156.255 31.4285 155.062 31.9111 154.122 32.8763C153.207 33.8161 152.75 35.0481 152.75 36.5721C152.75 38.0961 153.22 39.3662 154.16 40.3822C155.1 41.3982 156.281 41.9062 157.703 41.9062Z" fill="black"/>
+      <path d="M180.565 46.8594C178.558 46.8594 176.754 46.4149 175.154 45.5258C173.579 44.6368 172.335 43.4176 171.42 41.8681C170.531 40.2933 170.087 38.5279 170.087 36.5721C170.087 34.6924 170.531 32.9906 171.42 31.4666C172.309 29.9171 173.516 28.6979 175.04 27.8089C176.589 26.9198 178.304 26.4753 180.184 26.4753C181.987 26.4753 183.625 26.9071 185.099 27.7708C186.597 28.609 187.766 29.7774 188.604 31.2761C189.467 32.7493 189.899 34.3876 189.899 36.1911C189.899 36.4959 189.861 36.8515 189.785 37.2579C189.709 37.6389 189.62 38.0453 189.518 38.4771H175.23C175.51 39.6964 176.119 40.6362 177.059 41.2966C178.024 41.957 179.193 42.2872 180.565 42.2872C182.647 42.2872 184.235 41.6522 185.327 40.3822L188.566 43.4303C187.6 44.4971 186.419 45.3353 185.022 45.9449C183.651 46.5546 182.165 46.8594 180.565 46.8594ZM180.184 30.8569C178.939 30.8569 177.872 31.1745 176.983 31.8095C176.094 32.4445 175.51 33.3335 175.23 34.4765H184.756C184.197 32.0635 182.673 30.8569 180.184 30.8569Z" fill="black"/>
+      <path d="M189.965 26.8563H196.252L199.872 32.5715L203.682 26.8563H209.588L203.11 36.3816L209.969 46.4784H203.682L199.681 40.1917L195.49 46.4784H189.584L196.633 36.3816L189.965 26.8563Z" fill="black"/>
+    </svg>
+  );
+}
+
+/* ===================== Icons ===================== */
+const Ico = {
+  user: (p) => (<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9.99992 10.8333C12.3011 10.8333 14.1666 8.96785 14.1666 6.66667C14.1666 4.36548 12.3011 2.5 9.99992 2.5C7.69873 2.5 5.83325 4.36548 5.83325 6.66667C5.83325 8.96785 7.69873 10.8333 9.99992 10.8333ZM9.99992 10.8333C11.768 10.8333 13.4637 11.5357 14.714 12.786C15.9642 14.0362 16.6666 15.7319 16.6666 17.5M9.99992 10.8333C8.23181 10.8333 6.53612 11.5357 5.28587 12.786C4.03563 14.0362 3.33325 15.7319 3.33325 17.5" /></svg>),
+  sparkles: (p) => (<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M16.6667 1.66703V5.00037M18.3333 3.3337H15M9.18084 2.34537C9.21654 2.1542 9.31798 1.98155 9.46758 1.8573C9.61719 1.73305 9.80553 1.66504 10 1.66504C10.1945 1.66504 10.3828 1.73305 10.5324 1.8573C10.682 1.98155 10.7835 2.1542 10.8192 2.34537L11.695 6.97703C11.7572 7.30632 11.9172 7.60922 12.1542 7.84618C12.3912 8.08314 12.694 8.24316 13.0233 8.30537L17.655 9.1812C17.8462 9.21691 18.0188 9.31835 18.1431 9.46795C18.2673 9.61755 18.3353 9.8059 18.3353 10.0004C18.3353 10.1948 18.2673 10.3832 18.1431 10.5328C18.0188 10.6824 17.8462 10.7838 17.655 10.8195L13.0233 11.6954C12.694 11.7576 12.3912 11.9176 12.1542 12.1546C11.9172 12.3915 11.7572 12.6944 11.695 13.0237L10.8192 17.6554C10.7835 17.8465 10.682 18.0192 10.5324 18.1434C10.3828 18.2677 10.1945 18.3357 10 18.3357C9.80553 18.3357 9.61719 18.2677 9.46758 18.1434C9.31798 18.0192 9.21654 17.8465 9.18084 17.6554L8.305 13.0237C8.2428 12.6944 8.08277 12.3915 7.84581 12.1546C7.60885 11.9176 7.30596 11.7576 6.97667 11.6954L2.345 10.8195C2.15384 10.7838 1.98118 10.6824 1.85693 10.5328C1.73269 10.3832 1.66467 10.1948 1.66467 10.0004C1.66467 9.8059 1.73269 9.61755 1.85693 9.46795C1.98118 9.31835 2.15384 9.21691 2.345 9.1812L6.97667 8.30537C7.30596 8.24316 7.60885 8.08314 7.84581 7.84618C8.08277 7.60922 8.2428 7.30632 8.305 6.97703L9.18084 2.34537ZM5 16.667C5 17.5875 4.25381 18.3337 3.33333 18.3337C2.41286 18.3337 1.66667 17.5875 1.66667 16.667C1.66667 15.7466 2.41286 15.0004 3.33333 15.0004C4.25381 15.0004 5 15.7466 5 16.667Z" /></svg>),
+  chevronLeft: (p) => (<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M15 6l-6 6 6 6" /></svg>),
+  chevronRight: (p) => (<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9 6l6 6-6 6" /></svg>),
+  photo: (p) => (<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M15 8h.01" /><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M3 16l5-5c.9-.9 2.1-.9 3 0l5 5" /><path d="M14 14l1-1c.9-.9 2.1-.9 3 0l3 3" /></svg>),
+};
+
+const REF_LABELS = { ref_a: "행동", ref_b: "공간", ref_c: "요약" };
+const REF_ORDER = ["ref_a", "ref_b", "ref_c"];
+
+function useFonts() {
+  useEffect(() => {
+    const href = "https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css";
+    if (document.querySelector(`link[href="${href}"]`)) return;
+    const el = document.createElement("link"); el.rel = "stylesheet"; el.href = href; document.head.appendChild(el);
+  }, []);
+}
+
+/* ===================== Caption cards ===================== */
+function MetaChips({ ref_ }) {
+  if (!ref_) return null;
+  const chips = [];
+  if (ref_.shot_type) chips.push(ref_.shot_type);
+  if (ref_.motion_type) chips.push(ref_.motion_type);
+  if (ref_.temporal_change) chips.push(`change: ${ref_.temporal_change}`);
+  if (Array.isArray(ref_.text_on_screen) && ref_.text_on_screen.length) chips.push(`자막: ${ref_.text_on_screen.join(" / ")}`);
+  if (Array.isArray(ref_.mood) && ref_.mood.length) chips.push(ref_.mood.join(", "));
+  if (!chips.length) return null;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+      {chips.map((c, i) => (
+        <span key={i} style={{ fontFamily: T.fontEn, fontSize: 12, color: T.sub, background: "rgba(35,76,119,.07)", padding: "3px 8px", borderRadius: 6 }}>{c}</span>
+      ))}
+    </div>
+  );
+}
+
+function HumanCard({ caption }) {
+  return (
+    <div style={{ flex: 1, minWidth: 0, background: T.humanBg, borderRadius: 14, padding: "22px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 10, color: "#fff", background: "#9aa4b2", flexShrink: 0 }}><Ico.user width="24" height="24" /></span>
+        <span style={{ fontFamily: T.fontKo, fontWeight: 600, fontSize: 18, color: T.sub, letterSpacing: ".01em" }}>사람</span>
+      </div>
+      <p style={{ margin: 0, fontFamily: T.fontKo, fontSize: 19, fontWeight: 500, lineHeight: 1.65, color: caption ? T.text : "#aab2bd", wordBreak: "keep-all" }}>
+        {caption || "사람 캡션 없음"}
+      </p>
+    </div>
+  );
+}
+
+function AICard({ references }) {
+  const refs = Array.isArray(references) ? references : [];
+  const byId = {};
+  refs.forEach((r) => { if (r && r.ref_id) byId[r.ref_id] = r; });
+  const available = REF_ORDER.filter((id) => byId[id]);
+  const [active, setActive] = useState(available[0] || null);
+
+  // reset active ref when the scene's reference set changes
+  useEffect(() => { setActive(available[0] || null); }, [references]);
+
+  const cur = active ? byId[active] : null;
+  return (
+    <div style={{ flex: 1, minWidth: 0, background: T.aiBg, borderRadius: 14, padding: "22px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 10, color: "#fff", background: T.navy, flexShrink: 0 }}><Ico.sparkles width="24" height="24" /></span>
+        <span style={{ fontFamily: T.fontKo, fontWeight: 600, fontSize: 18, color: T.navy, letterSpacing: ".01em" }}>AI</span>
+        {available.length > 1 && (
+          <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "#fff", borderRadius: 9, padding: 3, border: `1px solid ${T.line}` }}>
+            {available.map((id) => {
+              const on = id === active;
+              return (
+                <button key={id} onClick={() => setActive(id)} title={`${id} · ${REF_LABELS[id]} 흐름`}
+                  style={{ border: "none", cursor: "pointer", fontFamily: T.fontKo, fontSize: 13, fontWeight: 600, padding: "5px 11px", borderRadius: 7, color: on ? "#fff" : T.sub, background: on ? T.navy : "transparent", transition: "background .12s ease" }}>
+                  {REF_LABELS[id]}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <p style={{ margin: 0, fontFamily: T.fontKo, fontSize: 19, fontWeight: 500, lineHeight: 1.65, color: cur ? T.text : "#aab2bd", wordBreak: "keep-all" }}>
+        {cur ? cur.caption : "AI 캡션 없음"}
+      </p>
+      <MetaChips ref_={cur} />
+    </div>
+  );
+}
+
+/* ===================== Arrows ===================== */
+function ArrowButton({ dir, onClick, disabled }) {
+  return (
+    <button aria-label={dir === "left" ? "이전" : "다음"} onClick={onClick} disabled={disabled}
+      style={{ width: 48, height: 48, borderRadius: "50%", border: "none", flexShrink: 0, display: "inline-flex", alignItems: "center", justifyContent: "center", background: disabled ? "#f1f3f6" : "#fff", color: disabled ? "#c4cad3" : T.navy, boxShadow: disabled ? "none" : "0 2px 10px rgba(35,76,119,.14)", cursor: disabled ? "default" : "pointer", transition: "transform .12s ease" }}
+      onMouseDown={(e) => !disabled && (e.currentTarget.style.transform = "scale(.92)")}
+      onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}>
+      {dir === "left" ? <Ico.chevronLeft /> : <Ico.chevronRight />}
+    </button>
+  );
+}
+
+/* ===================== Media (video clip → keyframe → placeholder) ===================== */
+function Placeholder() {
+  return (<div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "#1d2733", color: "#5f6b7a" }}><Ico.photo /></div>);
+}
+
+function SceneMedia({ entry, showFull }) {
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
+
+  const firstKf = (entry.keyframes && entry.keyframes[0]) || "";
+  const clipUrl = entry.video_url || null;
+  const fullUrl = entry.full_video_url || null;
+  const videoUrl = showFull ? (fullUrl || clipUrl) : clipUrl;
+
+  // reset failure flags whenever the source changes
+  useEffect(() => { setVideoFailed(false); setImgFailed(false); }, [entry.scene_id, videoUrl]);
+
+  let inner;
+  if (videoUrl && !videoFailed) {
+    inner = (
+      <video key={videoUrl} controls autoPlay muted playsInline poster={firstKf || undefined}
+        onError={() => setVideoFailed(true)}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain", background: "#1d2733" }}>
+        <source src={videoUrl} type="video/mp4" />
+        {entry.subtitle_url ? <track kind="subtitles" srcLang="ko" label="한국어" src={entry.subtitle_url} default /> : null}
+      </video>
+    );
+  } else if (firstKf && !imgFailed) {
+    inner = (<img src={firstKf} alt="" onError={() => setImgFailed(true)} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />);
+  } else {
+    inner = <Placeholder />;
+  }
+
+  return (
+    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 16, overflow: "hidden", background: "#1d2733" }}>
+      {inner}
+    </div>
+  );
+}
+
+/* ===================== Thumbnail strip ===================== */
+function ThumbStrip({ data, index, onJump }) {
+  return (
+    <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "4px 2px", marginBottom: 18 }}>
+      {data.map((d, i) => {
+        const active = i === index;
+        const thumb = (d.keyframes && d.keyframes[0]) || "";
+        return (
+          <button key={d.scene_id || i} onClick={() => onJump(i)} aria-label={`${i + 1}번 장면으로 이동`}
+            style={{ flex: "0 0 auto", width: 72, height: 40, padding: 0, borderRadius: 8, overflow: "hidden", cursor: "pointer", background: "#1d2733", boxSizing: "border-box", border: active ? `2px solid ${T.navy}` : `1px solid ${T.line}`, opacity: active ? 1 : 0.7, transition: "opacity .12s ease" }}>
+            {thumb ? (<img src={thumb} alt="" onError={(e) => (e.currentTarget.style.visibility = "hidden")} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />)
+              : (<span style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#5f6b7a" }}><Ico.photo width="18" height="18" /></span>)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ===================== Main viewer ===================== */
+function CaptionCompareViewer() {
+  useFonts();
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+  const [index, setIndex] = useState(0);
+  const [showFull, setShowFull] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/comparison")
+      .then((r) => { if (!r.ok) throw new Error(`/api/comparison ${r.status}`); return r.json(); })
+      .then((d) => setData(Array.isArray(d) ? d : (d && d.error ? (function () { throw new Error(d.error); })() : [])))
+      .catch((e) => setError(String(e.message || e)));
+  }, []);
+
+  const total = data ? data.length : 0;
+  const go = (delta) => setIndex((i) => Math.min(Math.max(i + delta, 0), Math.max(total - 1, 0)));
+
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "ArrowLeft") go(-1); else if (e.key === "ArrowRight") go(1); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [total]);
+
+  // reset the full/clip toggle when navigating between scenes
+  useEffect(() => { setShowFull(false); }, [index]);
+
+  const shell = (children) => (
+    <div style={{ fontFamily: T.fontKo, background: T.bg, color: T.text, maxWidth: 1080, margin: "0 auto", padding: "28px 24px 32px", boxSizing: "border-box" }}>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 56 }}><Logo height={48} /></div>
+      {children}
+    </div>
+  );
+
+  if (error) return shell(<div style={{ color: "#c0392b", textAlign: "center", padding: "40px 0" }}>데이터를 불러오지 못했습니다: {error}</div>);
+  if (!data) return shell(<div style={{ color: T.sub, textAlign: "center", padding: "40px 0" }}>불러오는 중…</div>);
+  if (total === 0) return shell(<div style={{ color: T.sub, textAlign: "center", padding: "40px 0" }}>표시할 결과가 없습니다.</div>);
+
+  const cur = data[index];
+  const atStart = index <= 0;
+  const atEnd = index >= total - 1;
+  const hasFull = !!cur.full_video_url;
+
+  return shell(
+    <React.Fragment>
+      <div style={{ padding: "0 62px" }}><ThumbStrip data={data} index={index} onJump={setIndex} /></div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {atStart ? (<div style={{ width: 48, flexShrink: 0 }} />) : (<ArrowButton dir="left" onClick={() => go(-1)} />)}
+        <div style={{ flex: 1, minWidth: 0, position: "relative" }}>
+          <SceneMedia entry={cur} showFull={showFull} />
+          <span style={{ position: "absolute", top: 12, right: 12, fontFamily: T.fontEn, fontSize: 13, fontWeight: 500, color: "#fff", background: "rgba(0,0,0,.45)", padding: "5px 11px", borderRadius: 8 }}>{index + 1} / {total}</span>
+          {hasFull && (
+            <button onClick={() => setShowFull((v) => !v)}
+              style={{ position: "absolute", top: 12, left: 12, fontFamily: T.fontKo, fontSize: 13, fontWeight: 600, color: "#fff", background: showFull ? T.navy : "rgba(0,0,0,.45)", border: "none", padding: "6px 12px", borderRadius: 8, cursor: "pointer" }}>
+              {showFull ? "구간 클립" : "전체 영상"}
+            </button>
+          )}
+        </div>
+        {atEnd ? (<div style={{ width: 48, flexShrink: 0 }} />) : (<ArrowButton dir="right" onClick={() => go(1)} />)}
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 8, fontFamily: T.fontEn, fontSize: 12, color: T.sub }}>
+        {cur.scene_id}
+        {(cur.clip_start != null && cur.clip_end != null) ? `  ·  ${cur.clip_start.toFixed(1)}–${cur.clip_end.toFixed(1)}s` : ""}
+      </div>
+
+      <div style={{ display: "flex", gap: 14, marginTop: 12, padding: "0 62px" }}>
+        <HumanCard caption={cur.human_caption} />
+        <AICard references={cur.claude_references} />
+      </div>
+    </React.Fragment>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<CaptionCompareViewer />);
+  </script>
+
+  <!-- Transform JSX with the classic runtime (React.createElement) and run it -->
+  <script>
+    (function () {
+      try {
+        var src = document.getElementById("app-source").textContent;
+        var out = Babel.transform(src, { presets: [["react", { runtime: "classic" }]] }).code;
+        (0, eval)(out);
+      } catch (e) {
+        document.getElementById("root").innerHTML =
+          '<pre style="color:#c00;white-space:pre-wrap;padding:24px;font:13px/1.5 monospace">⚠️ 실행 에러:\n\n' +
+          (e && (e.stack || e.message) ? (e.stack || e.message) : String(e)) + '</pre>';
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+# Secrets — never commit API keys or AWS credentials
+.env
+.env.*
+
+# Python venv + caches
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# OS cruft
+.DS_Store
+
+# Generated pipeline outputs (regenerate; do NOT commit)
+data/generated/*.json
+data/caption_jobs.jsonl
+data/clip_keys.json
+
+# Comparison output carrying PRESIGNED S3 URLs (embed an AWS access-key-id →
+# GitHub push-protection blocks it). Upload to Replit out-of-band instead.
+data/comparison.live.json
+
+# Local agent / tooling state (may contain transcripts)
+.omc/
+.claude/
+.sisyphus/
+
+# but DO track the placeholder example
+!.env.example
+.gstack/
+
+# Pilot scratch subsets (regenerable)
+data/*.pilot.jsonl
+
+# Extracted caption frames (regenerable, large)
+data/caption_frames/
+data/caption_frames.json

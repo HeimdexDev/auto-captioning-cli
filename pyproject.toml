@@ -1,0 +1,19 @@
+[project]
+name = "heimdex-caption-viewer"
+version = "0.1.0"
+description = "Review tool for a Korean live-commerce caption dataset: human vs Claude captions, per-scene video clips, served as a no-build web viewer."
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.40.0",
+    "boto3>=1.34.0",
+    "botocore[crt]>=1.34.0",
+    "imagehash>=4.3.1",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

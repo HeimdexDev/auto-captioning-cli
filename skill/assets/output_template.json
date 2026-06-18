@@ -1,0 +1,44 @@
+{
+  "scene_id": "<scene_id>",
+  "keyframe_paths": [
+    "<keyframe_path_or_filename>"
+  ],
+  "references": [
+    {
+      "ref_id": "ref_a",
+      "annotator_id": "claude_synthetic_a",
+      "annotated_at": "<ISO8601_TIMESTAMP>",
+      "caption": "<행동·사건 흐름 캡션, 30~80자>",
+      "shot_type": "medium",
+      "motion_type": "subject_motion",
+      "temporal_change": "minor",
+      "text_on_screen": null,
+      "mood": null,
+      "notes": ""
+    },
+    {
+      "ref_id": "ref_b",
+      "annotator_id": "claude_synthetic_b",
+      "annotated_at": "<ISO8601_TIMESTAMP>",
+      "caption": "<공간·시점 변화 캡션, 30~80자>",
+      "shot_type": "medium",
+      "motion_type": "subject_motion",
+      "temporal_change": "minor",
+      "text_on_screen": null,
+      "mood": null,
+      "notes": ""
+    },
+    {
+      "ref_id": "ref_c",
+      "annotator_id": "claude_synthetic_c",
+      "annotated_at": "<ISO8601_TIMESTAMP>",
+      "caption": "<장면 요약 서사 캡션, 30~80자>",
+      "shot_type": "medium",
+      "motion_type": "subject_motion",
+      "temporal_change": "minor",
+      "text_on_screen": null,
+      "mood": null,
+      "notes": ""
+    }
+  ]
+}
